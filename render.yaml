@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: todo-app
+    env: python
+    buildCommand: |
+      echo "Python version: $(python --version)"
+      python --version
+      poetry install --no-interaction --no-ansi
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
