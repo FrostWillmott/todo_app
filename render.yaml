@@ -5,6 +5,7 @@ services:
     buildCommand: |
       echo "Python version: $(python --version)"
       python --version
+      poetry --version
       poetry install --no-interaction --no-ansi
     startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
     envVars:
