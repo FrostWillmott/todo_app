@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException, Path, status
 
 from todo_app.dependencies import db_dependency
@@ -13,6 +12,7 @@ router = APIRouter(
 
 @router.get("/todo", status_code=status.HTTP_200_OK)
 async def read_all(user: user_dependency, db: db_dependency):
+    """Retrieve all todo items. Only accessible by admin users."""
     if user is None or user.get("user_role") != "admin":
         raise HTTPException(status_code=401, detail="Authentication failed")
     return db.query(Todos).all()
@@ -22,6 +22,7 @@ async def read_all(user: user_dependency, db: db_dependency):
 async def delete_todo(
     user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)
 ):
+    """Delete a specific todo item by ID. Only accessible by admin users."""
     if user is None or user.get("user_role") != "admin":
         raise HTTPException(status_code=401, detail="Authentication failed")
     todo_model = db.query(Todos).filter(Todos.id == todo_id).first()

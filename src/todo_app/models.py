@@ -4,6 +4,8 @@ from todo_app.database import Base
 
 
 class Users(Base):
+    """Represents the `users` table in the database."""
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -18,6 +20,8 @@ class Users(Base):
 
 
 class Todos(Base):
+    """Represents the `todos` table in the database."""
+
     __tablename__ = "todos"
 
     id = Column(Integer, primary_key=True, index=True)

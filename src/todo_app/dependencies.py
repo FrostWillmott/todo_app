@@ -8,6 +8,7 @@ from todo_app.database import SessionLocal
 
 
 def get_db():
+    """Dependency function to provide a database session."""
     db = SessionLocal()
     try:
         yield db

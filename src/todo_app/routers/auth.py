@@ -24,6 +24,8 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 class CreateUserRequest(BaseModel):
+    """Schema for creating a new user."""
+
     username: str
     email: str
     first_name: str
@@ -34,28 +36,28 @@ class CreateUserRequest(BaseModel):
 
 
 class Token(BaseModel):
+    """Schema for the JWT token response."""
+
     access_token: str
     token_type: str
-
-
-# db_dependency = Annotated[Session, Depends(get_db)]
-
-# templates = Jinja2Templates(directory="src/todo_app/templates")
 
 
 ### Pages ###
 @router.get("/login-page")
 def render_login_page(request: Request):
+    """Render the login page."""
     return templates.TemplateResponse("login.html", {"request": request})
 
 
 @router.get("/register-page")
 def render_register_page(request: Request):
+    """Render the registration page."""
     return templates.TemplateResponse("register.html", {"request": request})
 
 
 ### Endpoints ###
 def authenticate_user(username: str, password: str, db):
+    """Authenticate a user by verifying their username and password."""
     user = db.query(Users).filter(Users.username == username).first()
     if not user:
         return False
@@ -67,6 +69,7 @@ def authenticate_user(username: str, password: str, db):
 def create_access_token(
     username: str, user_id: int, role: str, expires_delta: timedelta
 ):
+    """Create a JWT access token."""
     encode = {"sub": username, "id": user_id, "role": role}
     expires = datetime.now(UTC) + expires_delta
     encode.update({"exp": expires})
@@ -74,6 +77,7 @@ def create_access_token(
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+    """Retrieve the current user from the JWT token."""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
@@ -96,6 +100,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
 async def create_user(
     db: db_dependency, create_user_request: CreateUserRequest
 ):
+    """Create a new user in the database."""
     create_user_model = Users(
         username=create_user_request.username,
         email=create_user_request.email,
@@ -115,6 +120,7 @@ async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: db_dependency,
 ):
+    """Authenticate the user and return a JWT access token."""
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(

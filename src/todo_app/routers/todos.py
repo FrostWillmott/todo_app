@@ -15,6 +15,8 @@ router = APIRouter(
 
 
 class TodoRequest(BaseModel):
+    """Schema for creating or updating a todo item."""
+
     title: str = Field(min_length=3)
     description: str = Field(min_length=3, max_length=100)
     priority: int = Field(gt=0, lt=6)
@@ -22,6 +24,7 @@ class TodoRequest(BaseModel):
 
 
 def redirect_to_login():
+    """Redirect the user to the login page and delete the access token cookie."""
     redirect_response = RedirectResponse(
         url="/auth/login-page", status_code=status.HTTP_302_FOUND
     )
@@ -31,6 +34,7 @@ def redirect_to_login():
 
 ### Pages ###
 async def get_current_user_or_redirect(access_token: str = Cookie(None)):
+    """Retrieve the current user or redirect to the login page if the user is not authenticated."""
     if access_token is None:
         return redirect_to_login()
     try:
@@ -46,6 +50,7 @@ async def render_todo_page(
     db: db_dependency,
     user: dict = Depends(get_current_user_or_redirect),
 ):
+    """Render the todo page for the authenticated user."""
     try:
         todos = db.query(Todos).filter(Todos.owner_id == user.get("id")).all()
         return templates.TemplateResponse(
@@ -59,6 +64,7 @@ async def render_todo_page(
 async def render_add_todo_page(
     request: Request, user: dict = Depends(get_current_user_or_redirect)
 ):
+    """Render the add-todo page for the authenticated user."""
     try:
         return templates.TemplateResponse(
             "add-todo.html", {"request": request, "user": user}
@@ -74,6 +80,7 @@ async def render_edit_todo_page(
     db: db_dependency,
     user: dict = Depends(get_current_user_or_redirect),
 ):
+    """Render the edit-todo page for the authenticated user."""
     try:
         todo = db.query(Todos).filter(Todos.id == todo_id).first()
         return templates.TemplateResponse(
@@ -86,6 +93,7 @@ async def render_edit_todo_page(
 ### Endpoints ###
 @router.get("/", status_code=status.HTTP_200_OK)
 async def read_all(user: user_dependency, db: db_dependency):
+    """Retrieve all todo items for the authenticated user."""
     return db.query(Todos).filter(Todos.owner_id == user.get("id")).all()
 
 
@@ -93,6 +101,7 @@ async def read_all(user: user_dependency, db: db_dependency):
 async def read_todo(
     user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)
 ):
+    """Retrieve a specific todo item by ID for the authenticated user."""
     todo_model = (
         db.query(Todos)
         .filter(Todos.id == todo_id)
@@ -108,6 +117,7 @@ async def read_todo(
 async def create_todo(
     user: user_dependency, db: db_dependency, todo_request: TodoRequest
 ):
+    """Create a new todo item for the authenticated user."""
     todo_model = Todos(**todo_request.model_dump(), owner_id=user.get("id"))
     db.add(todo_model)
     db.commit()
@@ -120,6 +130,7 @@ async def update_todo(
     todo_request: TodoRequest,
     todo_id: int = Path(gt=0),
 ):
+    """Update an existing todo item for the authenticated user."""
     todo_model = (
         db.query(Todos)
         .filter(Todos.id == todo_id)
@@ -140,6 +151,7 @@ async def update_todo(
 async def delete_todo(
     user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)
 ):
+    """Delete a specific todo item by ID for the authenticated user."""
     todo_model = (
         db.query(Todos)
         .filter(Todos.id == todo_id, Todos.owner_id == user.get("id"))

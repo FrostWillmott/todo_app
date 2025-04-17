@@ -17,6 +17,7 @@ app.mount(
 
 @app.get("/")
 def test(request: Request):
+    """Redirect the root URL ("/") to the todo page."""
     return RedirectResponse(
         url="/todos/todo-page", status_code=status.HTTP_302_FOUND
     )
@@ -24,6 +25,7 @@ def test(request: Request):
 
 @app.get("/healthy")
 def health_check():
+    """Perform a health check for the application."""
     return {"status": "healthy"}
 
 

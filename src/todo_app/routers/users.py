@@ -17,15 +17,20 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 class UsersVerification(BaseModel):
+    """Schema for user password verification."""
+
     password: str
     new_password: str = Field(min_length=6, max_length=100)
 
 
 class UsersPhoneVerification(BaseModel):
+    """Schema for user phone number verification."""
+
     new_phone_number: str = Field(min_length=6, max_length=50)
 
 
 def get_authenticated_user(user: dict, db: Session):
+    """Retrieve the authenticated user from the database."""
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication failed")
     user_model = db.query(Users).filter(Users.id == user.get("id")).first()
@@ -36,6 +41,7 @@ def get_authenticated_user(user: dict, db: Session):
 
 @router.get("/", status_code=status.HTTP_200_OK)
 async def get_user(user: user_dependency, db: db_dependency):
+    """Retrieve the currently authenticated user's details."""
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication failed")
     return db.query(Users).filter(Users.id == user.get("id")).first()
@@ -47,6 +53,7 @@ async def change_password(
     db: db_dependency,
     user_verification: UsersVerification,
 ):
+    """Change the password of the currently authenticated user."""
     user_model = get_authenticated_user(user, db)
 
     if not bcrypt_context.verify(
@@ -67,6 +74,7 @@ async def change_phone_number(
     db: db_dependency,
     user_user_phone_number: UsersPhoneVerification,
 ):
+    """Change the phone number of the currently authenticated user."""
     user_model = get_authenticated_user(user, db)
 
     user_model.phone_number = user_user_phone_number.new_phone_number
